@@ -1,6 +1,9 @@
 locals {
-  github_account = "replace" # Replace with your GitHub Account. This may be a personal account or an organization.
-  github_repository = "replace-me" # Replace with your GitHub Repository.
+  account_name = ""
+  repo_name = ""
+
+  project_path = "github://${local.account_name}/${local.repo_name}"
+  policies_path = "${local.project_path}/policies"
 }
 
 resource "abbey_grant_kit" "aws_permission_set_compute_full_access" {
@@ -20,17 +23,17 @@ resource "abbey_grant_kit" "aws_permission_set_compute_full_access" {
   }
 
   policies = [
-    { bundle = "github://${local.github_account}/${local.github_repository}/policies" }
+    { bundle = local.policies_path }
   ]
 
   output = {
-    location = "github://${local.github_account}/${local.github_repository}/modules/aws/access.tf"
+    location = "${local.project_path}/access.tf"
     append = <<-EOT
-      resource "aws_ssoadmin_account_assignment" "sandbox_compute_full_access_{{ .data.system.abbey.identities.aws.user_id }}" {
+      resource "aws_ssoadmin_account_assignment" "sandbox_compute_full_access_{{ .user.aws_identitystore.id }}" {
         instance_arn       = local.ssm_instance_arn
         permission_set_arn = local.permission_set_compute_full_access_arn
 
-        principal_id = "{{ .data.system.abbey.identities.aws.user_id }}"
+        principal_id = "{{ .user.aws_identitystore.id }}"
         principal_type = "USER"
 
         target_id   = local.organizations_account_sandbox_id
