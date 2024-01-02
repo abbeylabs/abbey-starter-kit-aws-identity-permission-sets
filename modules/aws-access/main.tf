@@ -3,6 +3,7 @@ locals {
   repo_name = ""
 
   project_path = "github://${local.account_name}/${local.repo_name}"
+  module_path = "${local.project_path}/modules/aws"
   policies_path = "${local.project_path}/policies"
 }
 
@@ -27,7 +28,7 @@ resource "abbey_grant_kit" "aws_permission_set_compute_full_access" {
   ]
 
   output = {
-    location = "${local.project_path}/access.tf"
+    location = "${local.module_path}/access.tf"
     append = <<-EOT
       resource "aws_ssoadmin_account_assignment" "sandbox_compute_full_access_{{ .user.aws_identitystore.id }}" {
         instance_arn       = local.ssm_instance_arn
